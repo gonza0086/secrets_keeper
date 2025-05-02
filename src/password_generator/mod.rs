@@ -13,6 +13,13 @@ impl PasswordGenerator {
         }
     }
 
+    pub fn build() -> PasswordGenerator {
+        PasswordGenerator::new(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#%^&*-_=+!@%&*=+",
+            32,
+        )
+    }
+
     fn generate_random_char(&self) -> String {
         let random_char = self
             .valid_chars

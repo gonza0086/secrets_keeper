@@ -23,6 +23,12 @@ fn main() {
             secrets_keeper.add(app_name.to_string(), &password);
             println!("Password generated: {}", password);
         }
+        "--update" | "-u" => {
+            let password_generator = PasswordGenerator::build();
+            let password = password_generator.generate_password();
+            secrets_keeper.update(app_name.to_string(), &password);
+            println!("Password updated: {}", password);
+        }
         "--get" | "-g" => {
             let password = secrets_keeper.get(app_name.to_string());
             println!("Password: {}", password);

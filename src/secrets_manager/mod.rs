@@ -33,6 +33,28 @@ impl SecretsKeeper {
         self.write_file(new_content);
     }
 
+    pub fn update(&self, app_name: String, password: &str) {
+        let mut lines = self.read_file().into_iter();
+        let mut password_updated = false;
+        let mut new_content = String::new();
+
+        while let Some(line) = lines.next() {
+            new_content += &format!("{}\n", line);
+
+            if line.to_lowercase() == app_name.to_lowercase() {
+                new_content += &format!("{}\n", password);
+                password_updated = true;
+                lines.next();
+            }
+        }
+
+        if !password_updated {
+            new_content += &format!("{}\n{}\n", app_name, password);
+        }
+
+        self.write_file(new_content);
+    }
+
     pub fn get(&self, app_name: String) -> String {
         let mut password: Option<String> = None;
         let mut lines = self.read_file().into_iter();

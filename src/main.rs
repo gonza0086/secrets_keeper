@@ -23,6 +23,10 @@ fn main() {
             secrets_keeper.add(app_name.to_string(), &password);
             println!("Password generated: {}", password);
         }
+        "--get" | "-g" => {
+            let password = secrets_keeper.get(app_name.to_string());
+            println!("Password: {}", password);
+        }
         _ => eprintln!("invalid verb!"),
     };
 }

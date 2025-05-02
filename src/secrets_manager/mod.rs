@@ -14,7 +14,6 @@ impl SecretsKeeper {
 
     pub fn add(&self, app_name: String, password: &str) {
         let lines = self.read_file();
-
         let mut new_password_added = false;
         let mut new_content = String::new();
 
@@ -32,6 +31,21 @@ impl SecretsKeeper {
         }
 
         self.write_file(new_content);
+    }
+
+    pub fn get(&self, app_name: String) -> String {
+        let mut password: Option<String> = None;
+        let mut lines = self.read_file().into_iter();
+        while let Some(line) = lines.next() {
+            if line.to_lowercase() == app_name.to_lowercase() {
+                password = Some(lines.next().unwrap());
+            }
+        }
+
+        match password {
+            Some(pass) => pass,
+            None => String::from("No password!"),
+        }
     }
 
     fn read_file(&self) -> Vec<String> {

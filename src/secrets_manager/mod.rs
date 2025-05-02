@@ -20,7 +20,7 @@ impl SecretsKeeper {
         for line in lines {
             new_content += &format!("{}\n", line);
 
-            if line == app_name {
+            if line.to_lowercase() == app_name.to_lowercase() {
                 new_content += &format!("{}\n", password);
                 new_password_added = true;
             }

@@ -1,5 +1,7 @@
-use std::fs::{self, File};
-use std::io::{BufRead, BufReader};
+use std::fs::File;
+use std::str;
+
+use cocoon::Cocoon;
 
 pub struct SecretsKeeper {
     path: String,
@@ -71,17 +73,22 @@ impl SecretsKeeper {
     }
 
     fn read_file(&self) -> Vec<String> {
-        let file = File::open(&self.path).expect("Error reading file!");
-        let file_reader = BufReader::new(file);
-        let lines = file_reader
+        let cocoon = Cocoon::new(b"master_key").with_weak_kdf();
+        let mut file = File::open(&self.path).expect("Error reading file!");
+        let decrypted_file = cocoon.parse(&mut file).expect("Error decrypting file!");
+
+        let lines = str::from_utf8(&decrypted_file)
+            .expect("Error converting data")
             .lines()
-            .collect::<std::io::Result<Vec<String>>>()
-            .expect("Error parsing lines!");
+            .map(str::to_string)
+            .collect::<Vec<String>>();
 
         return lines;
     }
 
     fn write_file(&self, new_content: String) {
-        fs::write(&self.path, new_content.as_bytes()).expect("Error writting file!");
+        let mut cocoon = Cocoon::new(b"master_key").with_weak_kdf();
+        let mut file = File::create(&self.path).expect("Error writting the file!");
+        let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
     }
 }

@@ -5,12 +5,14 @@ use cocoon::Cocoon;
 
 pub struct SecretsKeeper {
     path: String,
+    master_key: String,
 }
 
 impl SecretsKeeper {
-    pub fn new(path: &str) -> SecretsKeeper {
+    pub fn new(path: &str, master_key: &str) -> SecretsKeeper {
         SecretsKeeper {
             path: path.to_string(),
+            master_key: master_key.to_string(),
         }
     }
 
@@ -73,7 +75,7 @@ impl SecretsKeeper {
     }
 
     fn read_file(&self) -> Vec<String> {
-        let cocoon = Cocoon::new(b"master_key").with_weak_kdf();
+        let cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
         let mut file = File::open(&self.path).expect("Error reading file!");
         let decrypted_file = cocoon.parse(&mut file).expect("Error decrypting file!");
 
@@ -87,7 +89,7 @@ impl SecretsKeeper {
     }
 
     fn write_file(&self, new_content: String) {
-        let mut cocoon = Cocoon::new(b"master_key").with_weak_kdf();
+        let mut cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
         let mut file = File::create(&self.path).expect("Error writting the file!");
         let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
     }

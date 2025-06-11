@@ -74,6 +74,10 @@ impl SecretsKeeper {
         }
     }
 
+    pub fn list(&self) -> String {
+        self.read_file().join("\n")
+    }
+
     fn read_file(&self) -> Vec<String> {
         let cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
         let mut file = File::open(&self.path).expect("Error reading file!");

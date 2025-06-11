@@ -80,14 +80,21 @@ impl SecretsKeeper {
 
     fn read_file(&self) -> Vec<String> {
         let cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
-        let mut file = File::open(&self.path).expect("Error reading file!");
-        let decrypted_file = cocoon.parse(&mut file).expect("Error decrypting file!");
+        let lines = match File::open(&self.path) {
+            Ok(mut file) => {
+                let decrypted_file = cocoon.parse(&mut file).expect("Error decrypting file!");
 
-        let lines = str::from_utf8(&decrypted_file)
-            .expect("Error converting data")
-            .lines()
-            .map(str::to_string)
-            .collect::<Vec<String>>();
+                str::from_utf8(&decrypted_file)
+                    .expect("Error converting data")
+                    .lines()
+                    .map(str::to_string)
+                    .collect::<Vec<String>>()
+            }
+            Err(_) => {
+                File::create(&self.path).expect("Error writting the file!");
+                Vec::new()
+            }
+        };
 
         return lines;
     }

@@ -80,6 +80,27 @@ impl SecretsKeeper {
         }
     }
 
+    pub fn delete(&self, app_name: String) {
+        let mut lines = self.read_file().into_iter();
+        let saved_apps = lines.next().expect("File must have passwords");
+        let mut new_content = String::from(&saved_apps) + "\n";
+        let mut reading_selected_app = false;
+
+        while let Some(line) = lines.next() {
+            if line.to_lowercase() == app_name.to_lowercase() {
+                reading_selected_app = true;
+            } else if saved_apps.contains(&line.to_lowercase().as_str()) {
+                reading_selected_app = false;
+            }
+
+            if !reading_selected_app {
+                new_content += &format!("{}\n", line);
+            }
+        }
+
+        self.write_file(new_content);
+    }
+
     pub fn list(&self) -> String {
         self.read_file().join("\n")
     }

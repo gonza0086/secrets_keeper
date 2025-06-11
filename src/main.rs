@@ -42,6 +42,11 @@ fn main() {
             let password = secrets_keeper.get(app_name.to_string());
             println!("Password: {}", password);
         }
+        "--delete" | "-d" => {
+            let app_name = &args[4];
+            secrets_keeper.delete(app_name.to_string());
+            println!("Passwords deleted");
+        }
         "--list" | "-l" => {
             let passwords = secrets_keeper.list();
             println!("{}", passwords);

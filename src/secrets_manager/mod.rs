@@ -85,7 +85,11 @@ impl SecretsKeeper {
     pub fn delete(&self, app_name: String) {
         let mut lines = self.read_file().into_iter();
         let saved_apps = lines.next().expect("File must have passwords");
-        let mut new_content = String::from(&saved_apps) + "\n";
+        let mut splitted_apps: Vec<&str> = saved_apps.split(",").collect();
+        splitted_apps.retain(|app| *app != app_name);
+
+        let saved_apps_string = &splitted_apps.join(",");
+        let mut new_content = String::from(saved_apps_string) + "\n";
         let mut reading_selected_app = false;
 
         while let Some(line) = lines.next() {
@@ -94,7 +98,7 @@ impl SecretsKeeper {
                 new_content.pop();
             } else if reading_selected_app
                 && line != "\n"
-                && saved_apps.contains(&line.to_lowercase().as_str())
+                && saved_apps_string.contains(&line.to_lowercase().as_str())
             {
                 reading_selected_app = false;
             }

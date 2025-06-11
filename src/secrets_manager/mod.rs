@@ -19,7 +19,13 @@ impl SecretsKeeper {
     pub fn add(&self, app_name: String, password: &str) {
         let lines = self.read_file();
         let mut new_password_added = false;
-        let mut new_content = String::new();
+        let mut new_content = String::from(&app_name);
+
+        if lines.len() > 0 {
+            new_content += ",";
+        } else {
+            new_content += "\n";
+        }
 
         for line in lines {
             new_content += &format!("{}\n", line);
@@ -31,7 +37,7 @@ impl SecretsKeeper {
         }
 
         if !new_password_added {
-            new_content += &format!("{}\n{}\n", app_name, password);
+            new_content += &format!("\n{}\n{}\n", app_name, password);
         }
 
         self.write_file(new_content);

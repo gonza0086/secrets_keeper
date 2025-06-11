@@ -17,17 +17,19 @@ impl SecretsKeeper {
     }
 
     pub fn add(&self, app_name: String, password: &str) {
-        let lines = self.read_file();
+        let mut lines = self.read_file().into_iter();
         let mut new_password_added = false;
-        let mut new_content = String::from(&app_name);
+        let mut new_content = lines.next().unwrap_or_else(|| String::new());
 
-        if lines.len() > 0 {
-            new_content += ",";
+        if lines.len() > 0 && !new_content.contains(&app_name) {
+            new_content += &format!(",{}\n", app_name);
+        } else if !new_content.contains(&app_name) {
+            new_content += &format!("{}\n", app_name);
         } else {
             new_content += "\n";
         }
 
-        for line in lines {
+        while let Some(line) = lines.next() {
             new_content += &format!("{}\n", line);
 
             if line.to_lowercase() == app_name.to_lowercase() {

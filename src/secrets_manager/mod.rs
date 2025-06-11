@@ -91,12 +91,18 @@ impl SecretsKeeper {
         while let Some(line) = lines.next() {
             if line.to_lowercase() == app_name.to_lowercase() {
                 reading_selected_app = true;
-            } else if saved_apps.contains(&line.to_lowercase().as_str()) {
+                new_content.pop();
+            } else if reading_selected_app
+                && line != "\n"
+                && saved_apps.contains(&line.to_lowercase().as_str())
+            {
                 reading_selected_app = false;
             }
 
-            if !reading_selected_app {
+            if !reading_selected_app && line != "\n" {
                 new_content += &format!("{}\n", line);
+            } else if !reading_selected_app {
+                new_content += &format!("{}", line);
             }
         }
 

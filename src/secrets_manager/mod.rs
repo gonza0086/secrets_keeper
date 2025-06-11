@@ -118,7 +118,7 @@ impl SecretsKeeper {
     }
 
     fn read_file(&self) -> Vec<String> {
-        let cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
+        let cocoon = Cocoon::new(self.master_key.as_bytes());
         let lines = match File::open(&self.path) {
             Ok(mut file) => {
                 let decrypted_file = cocoon.parse(&mut file).expect("Error decrypting file!");
@@ -139,7 +139,7 @@ impl SecretsKeeper {
     }
 
     fn write_file(&self, new_content: String) {
-        let mut cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
+        let mut cocoon = Cocoon::new(self.master_key.as_bytes());
         let mut file = File::create(&self.path).expect("Error writting the file!");
         let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
     }

@@ -1,5 +1,6 @@
 use crate::password_generator::PasswordGenerator;
 use cocoon::{Cocoon, Error};
+use rpassword::read_password;
 use std::fs::File;
 use std::io::Write;
 use std::{io, str};
@@ -14,10 +15,7 @@ impl SecretsKeeper {
         print!("Enter master key: ");
         io::stdout().flush().unwrap();
 
-        let mut key = String::new();
-        io::stdin()
-            .read_line(&mut key)
-            .expect("Failed to get master key!");
+        let key = read_password().expect("Failed to read master key!");
 
         SecretsKeeper {
             path: path.to_string(),

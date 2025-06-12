@@ -12,14 +12,9 @@ pub struct SecretsKeeper {
 
 impl SecretsKeeper {
     pub fn new(path: &str) -> SecretsKeeper {
-        print!("Enter master key: ");
-        io::stdout().flush().unwrap();
-
-        let key = read_password().expect("Failed to read master key!");
-
         SecretsKeeper {
             path: path.to_string(),
-            master_key: key.trim().to_string(),
+            master_key: String::new(),
         }
     }
 
@@ -124,12 +119,19 @@ impl SecretsKeeper {
         prev_content.join("\n")
     }
 
-    fn decrypt_data(&self, mut file: File) -> Result<Vec<u8>, Error> {
-        let cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
+    fn decrypt_data(&mut self, mut file: File) -> Result<Vec<u8>, Error> {
+        print!("Enter master key: ");
+        io::stdout().flush().unwrap();
+
+        let key = read_password().expect("Failed to read master key!");
+        println!("\n------------------------");
+
+        self.master_key = key.clone();
+        let cocoon = Cocoon::new(key.as_bytes()).with_weak_kdf();
         cocoon.parse(&mut file)
     }
 
-    fn read_file(&self) -> Result<Vec<String>, Error> {
+    fn read_file(&mut self) -> Result<Vec<String>, Error> {
         let lines = match File::open(&self.path) {
             Ok(file) => {
                 let decrypted_file = self.decrypt_data(file)?;
@@ -140,7 +142,21 @@ impl SecretsKeeper {
                     .collect::<Vec<String>>()
             }
             Err(_) => {
-                let mut cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
+                print!("Enter new master key: ");
+                io::stdout().flush().unwrap();
+                let first_key = read_password().expect("Failed to read master key!");
+
+                print!("\nRepeat master key: ");
+                io::stdout().flush().unwrap();
+                let second_key = read_password().expect("Failed to read master key!");
+
+                println!("\n------------------------");
+                if first_key != second_key {
+                    panic!("Passwords do not match!");
+                }
+
+                self.master_key = second_key;
+                let mut cocoon = Cocoon::new(first_key.trim().as_bytes()).with_weak_kdf();
                 let mut file = File::create(&self.path).expect("Error writting the file!");
                 let _ = cocoon.dump("".as_bytes().to_vec(), &mut file);
 
@@ -157,7 +173,7 @@ impl SecretsKeeper {
         let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
     }
 
-    pub fn execute(&self, verb: &str, app_name: Option<String>) -> Result<(), Error> {
+    pub fn execute(&mut self, verb: &str, app_name: Option<String>) -> Result<(), Error> {
         let prev_content = self.read_file()?;
 
         match verb {

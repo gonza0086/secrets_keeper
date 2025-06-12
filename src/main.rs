@@ -20,7 +20,14 @@ fn main() {
 
     let master_key = &args[2];
     let verb = &args[3];
-    let secrets_keeper = SecretsKeeper::new("keeper.txt", master_key);
+    let path = env::current_exe()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_path_buf()
+        .join("keeper.txt");
+
+    let secrets_keeper = SecretsKeeper::new(path.to_str().unwrap(), master_key);
 
     match verb.to_string().as_str() {
         "--add" | "-a" => {

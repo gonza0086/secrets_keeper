@@ -30,11 +30,15 @@ fn main() {
         .to_path_buf()
         .join("keeper.txt");
 
-    let secrets_keeper = SecretsKeeper::new(path.to_str().unwrap()).unwrap();
-    if let Err(e) = secrets_keeper.execute(verb, app_name) {
-        match e {
-            cocoon::Error::Cryptography => println!("Wrong password!"),
-            _ => println!("Zerbero failed with error: {:?}", e),
+    match SecretsKeeper::new(path.to_str().unwrap()) {
+        Ok(zerbero) => {
+            if let Err(e) = zerbero.execute(verb, app_name) {
+                match e {
+                    cocoon::Error::Cryptography => println!("Wrong password!"),
+                    _ => println!("Zerbero failed with error: {:?}", e),
+                }
+            }
         }
+        Err(e) => println!("{}", e),
     }
 }

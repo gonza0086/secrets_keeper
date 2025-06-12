@@ -4,7 +4,7 @@ use rpassword::read_password;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use std::{io, str};
+use std::{env, io, str};
 
 pub struct SecretsKeeper {
     path: String,
@@ -12,8 +12,17 @@ pub struct SecretsKeeper {
 }
 
 impl SecretsKeeper {
-    pub fn new(path: &str) -> Result<SecretsKeeper, String> {
-        let dir = Path::new(path);
+    pub fn new() -> Result<SecretsKeeper, String> {
+        let path_buffer = env::current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_path_buf()
+            .join("keeper.txt");
+
+        let path = path_buffer.to_str().unwrap();
+        let dir = Path::new(&path);
+
         print!("Enter master key: ");
         io::stdout().flush().unwrap();
 

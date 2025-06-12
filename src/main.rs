@@ -23,14 +23,7 @@ fn main() {
         }
     };
 
-    let path = env::current_exe()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .to_path_buf()
-        .join("keeper.txt");
-
-    match SecretsKeeper::new(path.to_str().unwrap()) {
+    match SecretsKeeper::new() {
         Ok(zerbero) => {
             if let Err(e) = zerbero.execute(verb, app_name) {
                 match e {

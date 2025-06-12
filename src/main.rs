@@ -1,5 +1,5 @@
 use secrets_manager::SecretsKeeper;
-use std::env;
+use std::{env, process::exit};
 
 mod password_generator;
 mod secrets_manager;
@@ -8,10 +8,12 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        panic!("More options are required: --verb <OPTION>");
+        eprintln!("More options are required: --verb <OPTION>");
+        exit(1);
     }
     if &args[1] != "--list" && &args[1] != "-l" && args.len() < 3 {
-        panic!("App name is required: --verb app_name");
+        eprintln!("App name is required: --verb app_name");
+        exit(1);
     }
 
     let verb = &args[1];

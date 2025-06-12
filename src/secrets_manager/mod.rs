@@ -1,7 +1,7 @@
+use crate::password_generator::PasswordGenerator;
+use cocoon::{Cocoon, Error};
 use std::fs::File;
 use std::str;
-
-use cocoon::Cocoon;
 
 pub struct SecretsKeeper {
     path: String,
@@ -16,8 +16,8 @@ impl SecretsKeeper {
         }
     }
 
-    pub fn add(&self, app_name: String, password: &str) {
-        let mut lines = self.read_file().into_iter();
+    fn add(&self, app_name: String, password: &str, prev_content: Vec<String>) {
+        let mut lines = prev_content.into_iter();
         let mut new_password_added = false;
         let mut new_content = lines.next().unwrap_or_else(|| String::new());
 
@@ -45,8 +45,8 @@ impl SecretsKeeper {
         self.write_file(new_content);
     }
 
-    pub fn update(&self, app_name: String, password: &str) {
-        let mut lines = self.read_file().into_iter();
+    fn update(&self, app_name: String, password: &str, prev_content: Vec<String>) {
+        let mut lines = prev_content.into_iter();
         let mut password_updated = false;
         let mut new_content = String::new();
 
@@ -67,9 +67,9 @@ impl SecretsKeeper {
         self.write_file(new_content);
     }
 
-    pub fn get(&self, app_name: String) -> String {
+    fn get(&self, app_name: String, prev_content: Vec<String>) -> String {
         let mut password: Option<String> = None;
-        let mut lines = self.read_file().into_iter();
+        let mut lines = prev_content.into_iter();
         while let Some(line) = lines.next() {
             if line.to_lowercase() == app_name.to_lowercase() {
                 password = Some(lines.next().unwrap());
@@ -82,8 +82,8 @@ impl SecretsKeeper {
         }
     }
 
-    pub fn delete(&self, app_name: String) {
-        let mut lines = self.read_file().into_iter();
+    fn delete(&self, app_name: String, prev_content: Vec<String>) {
+        let mut lines = prev_content.into_iter();
         let saved_apps = lines.next().expect("File must have passwords");
         let mut splitted_apps: Vec<&str> = saved_apps.split(",").collect();
         splitted_apps.retain(|app| *app != app_name);
@@ -113,16 +113,19 @@ impl SecretsKeeper {
         self.write_file(new_content);
     }
 
-    pub fn list(&self) -> String {
-        self.read_file().join("\n")
+    fn list(&self, prev_content: Vec<String>) -> String {
+        prev_content.join("\n")
     }
 
-    fn read_file(&self) -> Vec<String> {
+    fn decrypt_data(&self, mut file: File) -> Result<Vec<u8>, Error> {
         let cocoon = Cocoon::new(self.master_key.as_bytes());
-        let lines = match File::open(&self.path) {
-            Ok(mut file) => {
-                let decrypted_file = cocoon.parse(&mut file).expect("Error decrypting file!");
+        cocoon.parse(&mut file)
+    }
 
+    fn read_file(&self) -> Result<Vec<String>, Error> {
+        let lines = match File::open(&self.path) {
+            Ok(file) => {
+                let decrypted_file = self.decrypt_data(file)?;
                 str::from_utf8(&decrypted_file)
                     .expect("Error converting data")
                     .lines()
@@ -135,12 +138,58 @@ impl SecretsKeeper {
             }
         };
 
-        return lines;
+        Ok(lines)
     }
 
     fn write_file(&self, new_content: String) {
         let mut cocoon = Cocoon::new(self.master_key.as_bytes());
         let mut file = File::create(&self.path).expect("Error writting the file!");
         let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
+    }
+
+    pub fn execute(&self, verb: &str, app_name: Option<String>) -> Result<(), Error> {
+        let prev_content = self.read_file()?;
+
+        match verb {
+            "--add" | "-a" => {
+                let password_generator = PasswordGenerator::build();
+                let password = password_generator.generate_password();
+                self.add(app_name.unwrap(), &password, prev_content);
+                println!("Password generated: {}", password);
+            }
+            "--update" | "-u" => {
+                let password_generator = PasswordGenerator::build();
+                let password = password_generator.generate_password();
+                self.update(app_name.unwrap(), &password, prev_content);
+                println!("Password updated: {}", password);
+            }
+            "--delete" | "-d" => {
+                self.delete(app_name.unwrap(), prev_content);
+                println!("Passwords deleted");
+            }
+            "--get" | "-g" => {
+                let password = {
+                    if prev_content.len() > 0 {
+                        self.get(app_name.unwrap(), prev_content)
+                    } else {
+                        String::from("No password!")
+                    }
+                };
+                println!("Password: {}", password);
+            }
+            "--list" | "-l" => {
+                let passwords = {
+                    if prev_content.len() > 0 {
+                        self.list(prev_content)
+                    } else {
+                        String::new()
+                    }
+                };
+                println!("{}", passwords);
+            }
+            _ => eprintln!("invalid verb!"),
+        };
+
+        Ok(())
     }
 }

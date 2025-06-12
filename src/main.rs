@@ -1,4 +1,3 @@
-use password_generator::PasswordGenerator;
 use secrets_manager::SecretsKeeper;
 use std::env;
 
@@ -20,6 +19,15 @@ fn main() {
 
     let master_key = &args[2];
     let verb = &args[3];
+
+    let app_name: Option<String> = {
+        if verb != "-l" && verb != "--list" {
+            Some(args[4].to_string())
+        } else {
+            None
+        }
+    };
+
     let path = env::current_exe()
         .unwrap()
         .parent()
@@ -29,35 +37,11 @@ fn main() {
 
     let secrets_keeper = SecretsKeeper::new(path.to_str().unwrap(), master_key);
 
-    match verb.to_string().as_str() {
-        "--add" | "-a" => {
-            let password_generator = PasswordGenerator::build();
-            let password = password_generator.generate_password();
-            let app_name = &args[4];
-            secrets_keeper.add(app_name.to_string(), &password);
-            println!("Password generated: {}", password);
-        }
-        "--update" | "-u" => {
-            let password_generator = PasswordGenerator::build();
-            let password = password_generator.generate_password();
-            let app_name = &args[4];
-            secrets_keeper.update(app_name.to_string(), &password);
-            println!("Password updated: {}", password);
-        }
-        "--get" | "-g" => {
-            let app_name = &args[4];
-            let password = secrets_keeper.get(app_name.to_string());
-            println!("Password: {}", password);
-        }
-        "--delete" | "-d" => {
-            let app_name = &args[4];
-            secrets_keeper.delete(app_name.to_string());
-            println!("Passwords deleted");
-        }
-        "--list" | "-l" => {
-            let passwords = secrets_keeper.list();
-            println!("{}", passwords);
-        }
-        _ => eprintln!("invalid verb!"),
-    };
+    match secrets_keeper.execute(verb, app_name) {
+        Ok(_) => println!("Zerbero executed succesfully!"),
+        Err(e) => match e {
+            cocoon::Error::Cryptography => println!("Wrong password!"),
+            _ => println!("Zerbero failed with error: {:?}", e),
+        },
+    }
 }

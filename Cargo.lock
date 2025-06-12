@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "zerbero"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cocoon",
  "rand 0.9.1",

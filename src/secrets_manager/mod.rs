@@ -1,7 +1,8 @@
 use crate::password_generator::PasswordGenerator;
 use cocoon::{Cocoon, Error};
 use std::fs::File;
-use std::str;
+use std::io::Write;
+use std::{io, str};
 
 pub struct SecretsKeeper {
     path: String,
@@ -9,10 +10,18 @@ pub struct SecretsKeeper {
 }
 
 impl SecretsKeeper {
-    pub fn new(path: &str, master_key: &str) -> SecretsKeeper {
+    pub fn new(path: &str) -> SecretsKeeper {
+        print!("Enter master key: ");
+        io::stdout().flush().unwrap();
+
+        let mut key = String::new();
+        io::stdin()
+            .read_line(&mut key)
+            .expect("Failed to get master key!");
+
         SecretsKeeper {
             path: path.to_string(),
-            master_key: master_key.to_string(),
+            master_key: key.trim().to_string(),
         }
     }
 
@@ -118,7 +127,7 @@ impl SecretsKeeper {
     }
 
     fn decrypt_data(&self, mut file: File) -> Result<Vec<u8>, Error> {
-        let cocoon = Cocoon::new(self.master_key.as_bytes());
+        let cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
         cocoon.parse(&mut file)
     }
 
@@ -133,7 +142,10 @@ impl SecretsKeeper {
                     .collect::<Vec<String>>()
             }
             Err(_) => {
-                File::create(&self.path).expect("Error writting the file!");
+                let mut cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
+                let mut file = File::create(&self.path).expect("Error writting the file!");
+                let _ = cocoon.dump("".as_bytes().to_vec(), &mut file);
+
                 Vec::new()
             }
         };
@@ -142,7 +154,7 @@ impl SecretsKeeper {
     }
 
     fn write_file(&self, new_content: String) {
-        let mut cocoon = Cocoon::new(self.master_key.as_bytes());
+        let mut cocoon = Cocoon::new(self.master_key.as_bytes()).with_weak_kdf();
         let mut file = File::create(&self.path).expect("Error writting the file!");
         let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
     }

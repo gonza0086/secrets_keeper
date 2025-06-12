@@ -1,12 +1,27 @@
-# Generador y almacenador de contraseñas seguras
+# Zerbero
+Terminal based secure password manager. All passwords are stores in an encrypted file using rust's crate Cocoon. The encryption key must be specified the first time a password is added.
 
-## Todo
-X - generador de contraseñas
-_ - herramienta con el verbo --add
-_ - herramienta con el verbo --update
-_ - herramienta con el verbo --delete
-_ - herramienta con el verbo --get
-_ - almacenar contraseñas en archivo separado
-_ - encriptar y desencriptar el archivo
-_ - acceso al archivo con contraseña maestra
-_ - si el archivo no tiene contraseña maestra la herramienta debe pedir que ingreses una
+### Features
+- Add password for a specified app
+- Get password of a specified app
+- Update password for a specified app
+- Delete password for a specified app
+- List all passwords
+
+### Execution
+In order to execute one of this features the following command should be used:
+zerbero -k <FILE_KEY> --<VERB> <APP_NAME>
+
+To list all passwords the <APP_NAME> is not needed.
+
+### Verbs
+Add: --add | -a
+
+Get: --get | -g
+
+Update: --update | -u
+
+Delete: --delete | -d
+
+List: --list | -l
+

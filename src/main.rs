@@ -30,7 +30,7 @@ fn main() {
         .to_path_buf()
         .join("keeper.txt");
 
-    let mut secrets_keeper = SecretsKeeper::new(path.to_str().unwrap());
+    let secrets_keeper = SecretsKeeper::new(path.to_str().unwrap()).unwrap();
     if let Err(e) = secrets_keeper.execute(verb, app_name) {
         match e {
             cocoon::Error::Cryptography => println!("Wrong password!"),

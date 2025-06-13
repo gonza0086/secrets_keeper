@@ -10,7 +10,7 @@ Terminal based secure password manager. All passwords are stores in an encrypted
 
 ### Execution
 In order to execute one of this features the following command should be used:
-zerbero -k <FILE_KEY> --<VERB> <APP_NAME>
+zerbero --<VERB> <APP_NAME>
 
 To list all passwords the <APP_NAME> is not needed.
 
@@ -26,9 +26,6 @@ Delete: --delete | -d
 List: --list | -l
 
 ## Todo
-- Remove key from the command and add it as an input
 - Make password characteristics a configuration provided when a passwword is being created
 - save for a time period the master key to avoid writing it so many times just like sudo works
 - Create the help verb
-- better error handling for decryption and encryption
-- when executing list verb if no file exists then the file created is corrupted

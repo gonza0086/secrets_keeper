@@ -27,5 +27,4 @@ List: --list | -l
 
 ## Todo
 - Make password characteristics a configuration provided when a passwword is being created
-- save for a time period the master key to avoid writing it so many times just like sudo works
 - Create the help verb

@@ -153,6 +153,8 @@ impl Zerbero {
     }
 
     fn decrypt_data(&self, mut file: File) -> Result<Vec<u8>, Error> {
+        dotenv().ok();
+
         let mut cocoon = Cocoon::new(self.master_key.as_bytes());
         if env::var("ENV").expect("No ENV specified") != "PROD" {
             cocoon = cocoon.with_weak_kdf();
@@ -185,18 +187,35 @@ impl Zerbero {
         let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
     }
 
-    pub fn execute(&self, verb: &str, app_name: Option<String>) -> Result<(), Error> {
+    pub fn execute(
+        &self,
+        verb: &str,
+        app_name: Option<String>,
+        config_password: bool,
+    ) -> Result<(), Error> {
         let prev_content = self.read_file()?;
 
         match verb {
             "--add" | "-a" => {
-                let password_generator = PasswordGenerator::build();
+                let password_generator = {
+                    if config_password {
+                        PasswordGenerator::config()
+                    } else {
+                        PasswordGenerator::build()
+                    }
+                };
                 let password = password_generator.generate_password();
                 self.add(app_name.unwrap(), &password, prev_content);
                 println!("Password generated: {}", password);
             }
             "--update" | "-u" => {
-                let password_generator = PasswordGenerator::build();
+                let password_generator = {
+                    if config_password {
+                        PasswordGenerator::config()
+                    } else {
+                        PasswordGenerator::build()
+                    }
+                };
                 let password = password_generator.generate_password();
                 self.update(app_name.unwrap(), &password, prev_content);
                 println!("Password updated: {}", password);

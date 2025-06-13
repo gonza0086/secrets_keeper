@@ -39,7 +39,11 @@ impl Zerbero {
                 return Err("Passwords do not match!".to_string());
             }
 
-            let mut cocoon = Cocoon::new(key.trim().as_bytes()).with_weak_kdf();
+            let mut cocoon = Cocoon::new(key.trim().as_bytes());
+            if env::var("ENV").expect("No ENV specified") != "PROD" {
+                cocoon = cocoon.with_weak_kdf();
+            }
+
             let mut file = File::create(path).expect("Error writting the file!");
             let _ = cocoon.dump("".as_bytes().to_vec(), &mut file);
         }

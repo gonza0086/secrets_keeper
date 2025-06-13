@@ -19,7 +19,7 @@ impl Zerbero {
             .parent()
             .unwrap()
             .to_path_buf()
-            .join("keeper.txt");
+            .join("zerbero.txt");
 
         let path = path_buffer.to_str().unwrap();
         let dir = Path::new(&path);

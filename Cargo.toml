@@ -5,5 +5,6 @@ edition = "2021"
 
 [dependencies]
 cocoon = "0.4.3"
+dotenvy = "0.15.7"
 rand = "0.9.1"
 rpassword = "7.4.0"

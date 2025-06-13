@@ -133,7 +133,7 @@ impl Zerbero {
                 new_content.pop();
             } else if reading_selected_app
                 && line != "\n"
-                && saved_apps_string.contains(&line.to_lowercase().as_str())
+                && splitted_apps.contains(&line.to_lowercase().as_str())
             {
                 reading_selected_app = false;
             }

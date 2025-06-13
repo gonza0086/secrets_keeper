@@ -10,9 +10,11 @@ Terminal based secure password manager. All passwords are stores in an encrypted
 
 ### Execution
 In order to execute one of this features the following command should be used:
-zerbero --<VERB> <APP_NAME>
+zerbero --<VERB> <APP_NAME> [-o]
 
 To list all passwords the <APP_NAME> is not needed.
+
+The -o option allows to specify parameters for the password creation. Only works with verbs add and update
 
 ### Verbs
 Add: --add | -a
@@ -24,7 +26,3 @@ Update: --update | -u
 Delete: --delete | -d
 
 List: --list | -l
-
-## Todo
-- Make password characteristics a configuration provided when a passwword is being created
-- Create the help verb

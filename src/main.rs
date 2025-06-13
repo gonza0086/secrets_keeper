@@ -1,8 +1,8 @@
-use secrets_manager::SecretsKeeper;
 use std::{env, process::exit};
+use zerbero::Zerbero;
 
 mod password_generator;
-mod secrets_manager;
+mod zerbero;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -25,7 +25,7 @@ fn main() {
         }
     };
 
-    match SecretsKeeper::new() {
+    match Zerbero::new() {
         Ok(zerbero) => {
             if let Err(e) = zerbero.execute(verb, app_name) {
                 match e {

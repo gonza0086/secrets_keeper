@@ -6,13 +6,13 @@ use std::io::Write;
 use std::path::Path;
 use std::{env, io, str};
 
-pub struct SecretsKeeper {
+pub struct Zerbero {
     path: String,
     master_key: String,
 }
 
-impl SecretsKeeper {
-    pub fn new() -> Result<SecretsKeeper, String> {
+impl Zerbero {
+    pub fn new() -> Result<Zerbero, String> {
         let path_buffer = env::current_exe()
             .unwrap()
             .parent()
@@ -44,7 +44,7 @@ impl SecretsKeeper {
         }
         println!("\n------------------------");
 
-        Ok(SecretsKeeper {
+        Ok(Zerbero {
             path: path.to_string(),
             master_key: key.trim().to_string(),
         })

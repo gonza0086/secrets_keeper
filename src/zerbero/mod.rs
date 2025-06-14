@@ -1,6 +1,5 @@
 use crate::password_generator::PasswordGenerator;
 use cocoon::{Cocoon, Error};
-use dotenvy::dotenv;
 use rpassword::read_password;
 use std::fs::File;
 use std::io::Write;
@@ -40,10 +39,6 @@ impl Zerbero {
             }
 
             let mut cocoon = Cocoon::new(key.trim().as_bytes());
-            if env::var("ENV").expect("No ENV specified") != "PROD" {
-                cocoon = cocoon.with_weak_kdf();
-            }
-
             let mut file = File::create(path).expect("Error writting the file!");
             let _ = cocoon.dump("".as_bytes().to_vec(), &mut file);
         }
@@ -157,13 +152,7 @@ impl Zerbero {
     }
 
     fn decrypt_data(&self, mut file: File) -> Result<Vec<u8>, Error> {
-        dotenv().ok();
-
-        let mut cocoon = Cocoon::new(self.master_key.as_bytes());
-        if env::var("ENV").expect("No ENV specified") != "PROD" {
-            cocoon = cocoon.with_weak_kdf();
-        }
-
+        let cocoon = Cocoon::new(self.master_key.as_bytes());
         cocoon.parse(&mut file)
     }
 
@@ -180,13 +169,7 @@ impl Zerbero {
     }
 
     fn write_file(&self, new_content: String) {
-        dotenv().ok();
-
         let mut cocoon = Cocoon::new(self.master_key.as_bytes());
-        if env::var("ENV").expect("No ENV specified") != "PROD" {
-            cocoon = cocoon.with_weak_kdf();
-        }
-
         let mut file = File::create(&self.path).expect("Error writting the file!");
         let _ = cocoon.dump(new_content.as_bytes().to_vec(), &mut file);
     }
